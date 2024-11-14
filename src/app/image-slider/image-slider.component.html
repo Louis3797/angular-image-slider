@@ -1,0 +1,35 @@
+<div class="image-slider">
+  <div
+    #slider
+    class="slides"
+    [style.transition]="'transform ' + animationSpeed + 'ms ease'"
+    [style.gap.px]="spaceBetween"
+  >
+    <div
+      #slide
+      class="slide"
+      *ngFor="let item of items"
+      [style.width.%]="slideWidth"
+    >
+      <app-image-card [imageUrl]="item.url" [title]="'Title'"></app-image-card>
+    </div>
+  </div>
+
+  <!-- Navigation Buttons -->
+  <button *ngIf="showNavigation" class="nav-button prev" (click)="prevSlide()">
+    <mat-icon fontIcon="chevron_left"></mat-icon>
+  </button>
+  <button *ngIf="showNavigation" class="nav-button next" (click)="nextSlide()">
+    <mat-icon fontIcon="chevron_right"></mat-icon>
+  </button>
+
+  <!-- Pagination -->
+  <div *ngIf="showPagination" class="pagination">
+    <span
+      *ngFor="let dot of [].constructor(totalPages); let i = index"
+      class="pagination-dot"
+      [class.active]="i === currentIndex"
+      (click)="currentIndex = i; updateSliderPosition()"
+    ></span>
+  </div>
+</div>

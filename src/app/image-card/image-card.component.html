@@ -1,0 +1,31 @@
+<a href="https://www.google.com" target="_blank" rel="noopener noreferrer">
+  <mat-card class="custom-card slide">
+    <!-- Skeleton Loader -->
+
+    @defer {
+    <!-- Image Element with Direct Load/Error Events -->
+    <img [src]="imageUrl" alt="Card" class="card-image" loading="lazy" />
+    <!-- <div class="error-state">
+      <mat-icon color="warn" fontIcon="error"></mat-icon>
+      <p>Image failed to load</p>
+    </div> -->
+    } @placeholder {
+
+    <ngx-skeleton-loader
+      appearance="custom-content"
+      [theme]="{ 'border-radius': '10px' }"
+    />
+
+    } @error {
+    <div class="error-state">
+      <mat-icon color="warn">broken_image</mat-icon>
+      <span>Image failed to load</span>
+    </div>
+    }
+
+    <!-- Card Footer with Title -->
+    <div class="card-footer">
+      <h3>{{ title }}</h3>
+    </div>
+  </mat-card>
+</a>
