@@ -5,12 +5,13 @@ import {
   Input,
   HostListener,
   OnInit,
-  NgModule,
   ElementRef,
   ViewChild,
+  AfterContentInit,
   AfterViewInit,
 } from '@angular/core';
 import { ImageCardComponent } from '../image-card/image-card.component';
+import { fromEvent, debounceTime } from 'rxjs';
 
 interface Slide {
   image: string;
@@ -29,12 +30,13 @@ interface BreakpointConfig {
   standalone: true,
   imports: [CommonModule, MatIconModule, ImageCardComponent],
 })
-export class ImageSliderComponent implements OnInit {
+export class ImageSliderComponent implements AfterViewInit {
   @Input() items: { url: string }[] = [];
   @Input() animationSpeed: number = 300;
   @Input() showNavigation: boolean = true;
   @Input() showPagination: boolean = true;
   @Input() breakpoints: { [width: number]: BreakpointConfig } = {};
+  @Input() loop = true;
 
   @ViewChild('slider') slider!: ElementRef<HTMLDivElement>;
   @ViewChild('slide') slide!: ElementRef<HTMLDivElement>;
@@ -45,7 +47,7 @@ export class ImageSliderComponent implements OnInit {
   totalPages: number = 0;
   slideWidth: number = 100;
 
-  ngOnInit() {
+  ngAfterViewInit() {
     this.updateVisibleSlides();
   }
 
@@ -74,10 +76,20 @@ export class ImageSliderComponent implements OnInit {
       this.totalPages = 1;
       this.showNavigation = false;
     }
+    console.log(this.visibleSlides);
 
-    this.slideWidth = Math.ceil(
-      100 / this.visibleSlides - this.spaceBetween / 10
-    );
+    const containerWidth = this.slider.nativeElement.clientWidth || 500;
+    console.log(containerWidth);
+
+    // Calculate the total space between slides
+    const totalSpaceBetween = (this.visibleSlides - 1) * this.spaceBetween;
+
+    // Calculate the width of each slide in percentage
+    this.slideWidth =
+      ((containerWidth - totalSpaceBetween) /
+        this.visibleSlides /
+        containerWidth) *
+      100;
 
     this.updateSliderPosition();
   }
@@ -85,6 +97,8 @@ export class ImageSliderComponent implements OnInit {
   nextSlide() {
     if (this.currentIndex < this.totalPages - 1) {
       this.currentIndex++;
+    } else if (this.loop) {
+      this.currentIndex = 0;
     }
     this.updateSliderPosition();
   }
@@ -92,16 +106,22 @@ export class ImageSliderComponent implements OnInit {
   prevSlide() {
     if (this.currentIndex > 0) {
       this.currentIndex--;
+    } else if (this.loop) {
+      this.currentIndex = this.totalPages - 1;
     }
     this.updateSliderPosition();
   }
 
   updateSliderPosition() {
+    // get slide width in px, this.SlideWidth is in %
     const slideWidth = Number(
       this.slide.nativeElement.getBoundingClientRect().width
     );
 
-    const offset = -this.currentIndex * (slideWidth + this.spaceBetween);
+    // Ensure spaceBetween is defined and has a default value if not provided
+    const spaceBetween = this.spaceBetween || 0;
+
+    const offset = -this.currentIndex * (slideWidth + spaceBetween);
 
     this.slider.nativeElement.style.transform = `translateX(${offset}px)`;
   }
@@ -112,9 +132,5 @@ export class ImageSliderComponent implements OnInit {
 
   isActiveDot(index: number): boolean {
     return index === Math.floor(this.currentIndex / this.visibleSlides);
-  }
-
-  goToSlide(index: number) {
-    this.currentIndex = index * this.visibleSlides;
   }
 }
